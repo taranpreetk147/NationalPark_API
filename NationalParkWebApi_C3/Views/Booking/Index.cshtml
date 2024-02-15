@@ -1,0 +1,128 @@
+﻿@model NationalParkWebApi_C3.Models.Booking
+@using Microsoft.Extensions.Options
+@inject IOptions<NationalParkWebApi_C3.StripeSettings> stripe;
+@{
+    ViewData["Title"] = "Index";
+}
+
+<form method="post" asp-action="Index" asp-controller="Booking">
+    <div class="row border">
+        <div class="col-8"> 
+            <div class="form-group row p-2 m-2">
+                <div class="col-4">
+                    <label asp-for="BookingDate">Booking Date:</label>
+                </div>
+                <div class="col-8">
+                    <input type="text" id="datepickers" asp-for="BookingDate" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row p-2 m-2">
+                <div class="col-4">
+                    <label asp-for="name">Name</label>
+                </div>
+                <div class="col-8">
+                    <input type="text" asp-for="name" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row p-2 m-2">
+                <div class="col-4">
+                    <label asp-for="Email">Email</label>
+                </div>
+                <div class="col-8">
+                    <input type="text" asp-for="Email" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row p-2 m-2">
+                <div class="col-4">
+                    <label asp-for="Address">Address</label>
+                </div>
+                <div class="col-8">
+                    <input type="text" asp-for="Address" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row p-2 m-2">
+                <div class="col-4">
+                    <label asp-for="Phone">Phone</label>
+                </div>
+                <div class="col-8">
+                    <input type="text" asp-for="Phone" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group row p-2 m-2">
+                <div class="col-4">
+                    <label>BookTickets</label>
+                </div>
+                <div class="col-8">
+                    <label for="numberOfChildren" class="m-1 p-1">Number of Children:</label>
+                    <input type="number" class="form-control" id="numberOfChildren" name="numberOfChildren" />
+
+                    <label for="numberOfAdults" class="m-1 p-1">Number of Adults:</label>
+                    <input type="number" class="form-control" id="numberOfAdults" name="numberOfAdults" />                   
+                </div>                  
+            </div>
+            <!-- Display the total price -->
+            <div id="totalPriceDiv" class="form-group row p-2 m-2">
+                <div class="col-4">
+                    <label asp-for="Amount">Total Price:</label>
+                    <input type="hidden" id="hiddenAmount" name="Amount" asp-for="Amount" />
+                </div>
+                <div class="col-8">
+                    <h5><span id="totalPrice"></span></h5>
+                </div>
+            </div>
+
+            <div class="form-group row p-2 m-2">           
+               
+                <script src="https://checkout.stripe.com/checkout.js"
+                        class="stripe-button"
+                        data-key="@stripe.Value.PublishableKey"
+                        data-amount=totalPrice * 100
+                        data-name="Booking Payment"
+                        data-description="Booking"
+                        data-locale="auto"
+                        data-label="Place Order"
+                        data-allow-rember-me="false">
+                </script>
+                <script>
+                    var el = document.getElementsByClassName('stripe-button-el');
+                    el[0].style.display = "none";
+                </script>
+                    <button type="submit" class="btn btn-info form-control">Confirm</button>
+                </div>
+            </div>
+        </div>
+</form>
+@section Scripts{
+    <script>
+        // Function to calculate and update the total price
+        function updateTotalPrice() {
+            var numberOfChildren = parseInt(document.getElementById('numberOfChildren').value) || 0;
+            var numberOfAdults = parseInt(document.getElementById('numberOfAdults').value) || 0;
+
+            // Calculate total price
+            var childPrice = 40 * numberOfChildren;
+            var adultPrice = 80 * numberOfAdults;
+            var totalPrice = childPrice + adultPrice;
+
+            document.getElementById('totalPrice').innerText = '$' + totalPrice;
+            document.getElementById('hiddenAmount').value = totalPrice;
+        }
+
+        // Event listeners to trigger the calculation when input changes
+        document.getElementById('numberOfChildren').addEventListener('input', updateTotalPrice);
+        document.getElementById('numberOfAdults').addEventListener('input', updateTotalPrice);
+
+        // Initial calculation when the page loads
+        updateTotalPrice();
+
+        //DatePicker
+        $(function () {
+            $("#datepickers").datepicker({
+                changeMonth: true,
+                changeYear: true,
+                minDate: 0 // Setting minDate to 0 allows only future dates to be selected
+            });
+        });
+    </script>
+}
+
